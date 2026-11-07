@@ -109,15 +109,15 @@ def classify_traces(
             check_cancelled()
         reason = None
         if not finite[index]:
-            reason = "sinal contém valores não finitos"
+            reason = "signal contains non-finite values"
         elif currents is not None and not np.isfinite(currents[index]):
-            reason = "estímulo não finito"
+            reason = "non-finite stimulus"
         elif currents is not None and trained_current_range is not None:
             low, high = trained_current_range
             if currents[index] < low or currents[index] > high:
-                reason = "estímulo fora do domínio de treinamento"
+                reason = "stimulus outside the training domain"
         if reason is None and spike_count < minimum_spikes:
-            reason = "atividade insuficiente para distinguir o padrão"
+            reason = "insufficient activity to distinguish the pattern"
         results.append(InferenceResult(False, None, None, None, 0.0, int(spike_count), reason))
         if reason is None:
             eligible.append(index)
@@ -145,14 +145,14 @@ def classify_traces(
                 if not np.isfinite(confidence):
                     results[row] = InferenceResult(
                         False, None, None, None, 0.0, int(spikes[row]),
-                        "previsão contém valores não finitos",
+                        "prediction contains non-finite values",
                     )
                     continue
                 determined = confidence >= confidence_threshold
                 results[row] = InferenceResult(
                     determined, prediction, class_codes[prediction], class_names[prediction],
                     float(confidence), int(spikes[row]),
-                    None if determined else "confiança abaixo do limiar",
+                    None if determined else "confidence below the threshold",
                 )
             check_cancelled()
     return results

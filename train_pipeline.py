@@ -140,25 +140,25 @@ def _write_results_summary(
     test_report: dict[str, object],
     benchmark_report: dict[str, object],
 ) -> None:
-    target_status = "ATINGIDA" if test_report["target_met"] else "NÃO ATINGIDA"
+    target_status = "MET" if test_report["target_met"] else "NOT MET"
     lines = [
-        "# Resumo automático dos resultados",
+        "# Automated results summary",
         "",
-        "> Este texto é gerado a partir do conjunto de teste retido. Deve ser ",
-        "> revisado e incorporado ao relatório final, não copiado sem contexto.",
+        "> This text is generated from the held-out test set. It should be ",
+        "> reviewed and incorporated into the final report, not copied without context.",
         "",
-        "## Classificação Izhikevich",
+        "## Izhikevich classification",
         "",
-        f"- Acurácia no teste: **{test_report['accuracy']:.2%}**.",
-        f"- Meta institucional: **{test_report['target_accuracy']:.2%} — {target_status}**.",
-        f"- F1 macro: **{test_report['macro_f1']:.3f}**.",
-        f"- Amostras de teste: **{test_report['total']}**.",
-        f"- Faixa de estímulo observada no teste: **{test_report['held_out_current_range'][0]:.2f}–"
-        f"{test_report['held_out_current_range'][1]:.2f} unidades do modelo**.",
+        f"- Test accuracy: **{test_report['accuracy']:.2%}**.",
+        f"- Institutional target: **{test_report['target_accuracy']:.2%} — {target_status}**.",
+        f"- Macro F1: **{test_report['macro_f1']:.3f}**.",
+        f"- Test samples: **{test_report['total']}**.",
+        f"- Stimulus range observed in the test set: **{test_report['held_out_current_range'][0]:.2f}–"
+        f"{test_report['held_out_current_range'][1]:.2f} model units**.",
         "",
-        "### Resultados por classe",
+        "### Per-class results",
         "",
-        "| Classe | Precisão | Recall | F1 | Suporte |",
+        "| Class | Precision | Recall | F1 | Support |",
         "|---|---:|---:|---:|---:|",
     ]
     for name in CLASS_NAMES:
@@ -169,19 +169,19 @@ def _write_results_summary(
         )
     lines.extend([
         "",
-        "## Custo computacional da simulação",
+        "## Simulation computational cost",
         "",
-        f"- LIF: **{benchmark_report['lif']['microseconds_per_trace']:.2f} µs/traço**.",
-        f"- Izhikevich: **{benchmark_report['izhikevich']['microseconds_per_trace']:.2f} µs/traço**.",
-        f"- Razão Izhikevich/LIF: **{benchmark_report['izhikevich_to_lif_runtime_ratio']:.2f}×**.",
+        f"- LIF: **{benchmark_report['lif']['microseconds_per_trace']:.2f} µs/trace**.",
+        f"- Izhikevich: **{benchmark_report['izhikevich']['microseconds_per_trace']:.2f} µs/trace**.",
+        f"- Izhikevich/LIF ratio: **{benchmark_report['izhikevich_to_lif_runtime_ratio']:.2f}×**.",
         "",
-        "O benchmark mede custo computacional, não equivalência biológica. Os modelos "
-        "possuem equações, estados e escalas de entrada diferentes.",
+        "The benchmark measures computational cost, not biological equivalence. The models "
+        "have different equations, states, and input scales.",
         "",
-        "## Limitação obrigatória",
+        "## Required limitation",
         "",
-        "Os sinais são sintéticos e a avaliação mede generalização dentro da distribuição "
-        "simulada. O resultado não demonstra funcionamento com registros neurais reais.",
+        "The signals are synthetic, and the evaluation measures generalization within the "
+        "simulated distribution. The result does not demonstrate operation on real neural recordings.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8")

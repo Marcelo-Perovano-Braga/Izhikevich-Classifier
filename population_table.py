@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class PopulationTableModel(QAbstractTableModel):
-    HEADERS = ("Neurônio", "Esperado", "Previsto", "Confiança", "Disparos", "Estado")
+    HEADERS = ("Neuron", "Expected", "Predicted", "Confidence", "Spikes", "Status")
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -33,7 +33,7 @@ class PopulationTableModel(QAbstractTableModel):
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             if section == 1 and self.result is not None and self.result.population.network_activity is not None:
-                return "Parâmetros"
+                return "Parameters"
             return self.HEADERS[section] if 0 <= section < len(self.HEADERS) else None
         return None
 
@@ -49,21 +49,21 @@ class PopulationTableModel(QAbstractTableModel):
         expected = CLASS_CODES[int(population.labels[row])]
         prediction = self.result.predictions[row] if self.result.predictions is not None else None
         if prediction is None:
-            predicted, confidence, state = "—", "—", "Sem modelo"
+            predicted, confidence, state = "—", "—", "No model"
         elif not prediction.determined:
             predicted = f"{prediction.class_code} (?)" if prediction.class_code else "—"
             confidence = f"{prediction.confidence:.1%}" if prediction.class_code else "—"
-            state = "Indeterminado"
+            state = "Indeterminate"
         else:
             predicted = prediction.class_code
             confidence = f"{prediction.confidence:.1%}"
-            state = "Correto" if predicted == expected else "Divergente"
+            state = "Correct" if predicted == expected else "Mismatch"
         if population.network_activity is not None:
-            if state == "Correto":
-                state = "Concordante"
+            if state == "Correct":
+                state = "Matching"
             if role == Qt.ItemDataRole.ToolTipRole:
                 reason = prediction.reason if prediction is not None and prediction.reason else ""
-                return f"{reason} Previsão experimental: modelo treinado com neurônios independentes.".strip()
+                return f"{reason} Experimental prediction: model trained on independent neurons.".strip()
         elif role == Qt.ItemDataRole.ToolTipRole and prediction is not None and prediction.reason:
             return prediction.reason
         values = (row + 1, expected, predicted, confidence, int(population.spike_counts[row]), state)

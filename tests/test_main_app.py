@@ -51,6 +51,20 @@ class PopulationInterfaceTests(unittest.TestCase):
         window._submit_request()
         wait_until(lambda: window.result is not None and window.result.population.request.counts == counts)
 
+    def test_us_english_numbers_override_a_portuguese_system_locale(self):
+        from PyQt6.QtCore import QLocale
+
+        previous_locale = QLocale()
+        QLocale.setDefault(QLocale("pt_BR"))
+        self.addCleanup(QLocale.setDefault, previous_locale)
+        window = self.window(with_model=False)
+        self.assertEqual(window.locale().name(), "en_US")
+        self.assertEqual(window.weight_spin.locale().decimalPoint(), ".")
+        window.weight_spin.setValue(1.25)
+        self.assertEqual(window.weight_spin.text(), "1.25")
+        window.slider_current.setValue(125)
+        self.assertEqual(window.label_current.text(), "12.5")
+
     def test_all_neurons_are_classified_and_selection_only_changes_the_view(self):
         window = self.window()
         self.configure(window, (2, 1, 1))
@@ -79,7 +93,7 @@ class PopulationInterfaceTests(unittest.TestCase):
         self.assertEqual(stats.indeterminate, 3)
         self.assertIsNone(stats.accuracy)
         self.assertEqual(stats.confusion_matrix[:, -1].tolist(), [1, 1, 1])
-        self.assertTrue(all("fora do domínio" in item.reason for item in window.result.predictions))
+        self.assertTrue(all("outside the training domain" in item.reason for item in window.result.predictions))
 
     def test_empty_population_clears_stale_data_and_can_recover(self):
         window = self.window()
@@ -89,7 +103,7 @@ class PopulationInterfaceTests(unittest.TestCase):
         window._submit_request()
         self.assertIsNone(window.result)
         self.assertEqual(window.table_model.rowCount(), 0)
-        self.assertIn("pelo menos um", window.status_label.text())
+        self.assertIn("at least one", window.status_label.text())
         self.assertFalse(window.neuron_selector.isEnabled())
         self.configure(window, (1, 0, 0))
         self.assertEqual(window.result.population.size, 1)
@@ -100,7 +114,7 @@ class PopulationInterfaceTests(unittest.TestCase):
         self.assertIsNone(window.result.predictions)
         self.assertEqual(window.result.statistics.unclassified, 4)
         self.assertEqual(window.result.statistics.indeterminate, 0)
-        self.assertEqual(window.table_model.data(window.table_model.index(0, 5)), "Sem modelo")
+        self.assertEqual(window.table_model.data(window.table_model.index(0, 5)), "No model")
         self.assertEqual(window.counts_table.item(0, 1).text(), "—")
         self.assertEqual(window.confusion_table.item(0, 0).text(), "—")
 
@@ -116,21 +130,21 @@ class PopulationInterfaceTests(unittest.TestCase):
         self.assertEqual(graph.synapse_count, 32)
         self.assertEqual(result.statistics.total, 8)
         self.assertEqual(window.table_model.rowCount(), 8)
-        self.assertIn("experimental", window.status_label.text())
-        self.assertEqual(window.accuracy_card.title_label.text(), "Concordância experimental")
+        self.assertIn("Experimental", window.status_label.text())
+        self.assertEqual(window.accuracy_card.title_label.text(), "Experimental agreement")
         self.assertIsNotNone(window.rate_curve.yData)
-        self.assertIn("32 sinapses", window.network_detail.text())
+        self.assertIn("32 directed synapses", window.network_detail.text())
         window.neuron_selector.setValue(8)
-        self.assertIn("Neurônio 8", window.connection_detail.text())
+        self.assertIn("Neuron 8", window.connection_detail.text())
         np.testing.assert_array_equal(window.curve.yData, result.population.traces[7])
         self.assertIs(window.result, result)
         window.network_check.setChecked(False)
         window._submit_request()
         wait_until(lambda: window.result.population.request.network is None)
         self.assertIsNone(window.result.population.network_activity)
-        self.assertIn("Modo independente", window.network_detail.text())
+        self.assertIn("Independent mode", window.network_detail.text())
         self.assertTrue(window.rate_curve.yData is None or not window.rate_curve.yData.size)
-        self.assertEqual(window.accuracy_card.title_label.text(), "Acerto dos classificados")
+        self.assertEqual(window.accuracy_card.title_label.text(), "Accuracy among classified neurons")
 
     def test_population_budget_error_can_recover_to_independent_mode(self):
         window = self.window(with_model=False)
@@ -140,7 +154,7 @@ class PopulationInterfaceTests(unittest.TestCase):
         window.network_check.setChecked(True)
         window._submit_request()
         self.assertIsNone(window.result)
-        self.assertIn("limite", window.status_label.text())
+        self.assertIn("limit", window.status_label.text())
         window.network_check.setChecked(False)
         self.configure(window, (2, 1, 1))
         self.assertEqual(window.result.population.size, 4)

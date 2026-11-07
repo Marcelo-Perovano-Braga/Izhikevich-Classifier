@@ -62,9 +62,9 @@ class BatchInferenceTests(unittest.TestCase):
                 )
                 self.assertEqual(model.batch_sizes, [2, 2])
                 self.assertEqual([item.class_code for item in results], ["FS", None, "RS", "CH", None, "RS", None])
-                self.assertIn("atividade insuficiente", results[1].reason)
-                self.assertIn("fora do domínio", results[4].reason)
-                self.assertIn("não finitos", results[6].reason)
+                self.assertIn("insufficient activity", results[1].reason)
+                self.assertIn("outside the training domain", results[4].reason)
+                self.assertIn("non-finite", results[6].reason)
                 np.testing.assert_array_equal(values, traces)
 
     def test_population_cnn_inference_matches_single_neuron_inference(self):

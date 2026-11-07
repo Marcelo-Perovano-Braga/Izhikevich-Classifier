@@ -1,6 +1,7 @@
 import sqlite3
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 from config import SimulationConfig
@@ -31,13 +32,16 @@ class DatasetTests(unittest.TestCase):
             self.assertEqual(metadata["simulation"]["window_size"], 400)
 
             expected_per_class = {"train": 21, "validation": 4, "test": 5}
-            with sqlite3.connect(path) as connection:
+            with closing(sqlite3.connect(path)) as connection:
                 for split, expected in expected_per_class.items():
                     rows = connection.execute(
                         "SELECT label, COUNT(*) FROM samples WHERE split=? GROUP BY label",
                         (split,),
                     ).fetchall()
                     self.assertEqual(rows, [(0, expected), (1, expected), (2, expected)])
+
+            with self.assertRaises(sqlite3.ProgrammingError):
+                connection.execute("SELECT 1")
 
             traces, labels, sample_metadata = load_split(path, "test")
             self.assertEqual(traces.shape, (15, 400))

@@ -1,64 +1,63 @@
-# Protocolo 2: envelopes variados e seleção por grupos
+# Protocol 2: varied envelopes and group-based selection
 
-O primeiro candidato ampliado falhou no estímulo triangular. Esse resultado
-passou a ser informação de desenvolvimento. Triângulos e pulsos duplos não
-são mais famílias inéditas neste protocolo.
+The first expanded candidate failed on the triangular stimulus. That result
+became development information. Triangles and double pulses are no longer
+unseen families in this protocol.
 
 ```bash
 python train_robust.py --protocol 2 --seed 27149 --epochs 50 --patience 12 --train-per-class 200 --validation-per-class 50 --test-per-class 100 --threads 4 --adopt-if-superior
 ```
 
-`--protocol 1` continua disponível para reproduzir o estudo anterior. Ao
-comparar `--candidate`, a versão é lida do próprio checkpoint.
+`--protocol 1` remains available to reproduce the previous study. When comparing
+with `--candidate`, the version is read from the checkpoint itself.
 
-## Ajuste do candidato
+## Candidate fitting
 
-A arquitetura `NeuronClassifier1D` e o limiar de confiança de 0,7 são mantidos.
-O modelo é inicializado do zero. Os 25 controles anteriores são preservados,
-com 31 condições adicionais: rampas descendentes, triângulos, pulsos duplos,
-pulsos aleatórios, degraus aleatórios, envelopes interpolados, rampas
-aleatórias, triângulos assimétricos aleatórios e senoides aleatórias. Quatro
-dessas famílias também são simuladas em redes conectadas. Os envelopes
-aleatórios variam por neurônio, usando um fluxo de RNG separado dos rótulos,
-parâmetros, amplitudes e ruído de observação.
+The `NeuronClassifier1D` architecture and 0.7 confidence threshold are retained.
+The model is initialized from scratch. The previous 25 controls are preserved,
+with 31 additional conditions: descending ramps, triangles, double pulses,
+random pulses, random steps, interpolated envelopes, random ramps, random
+asymmetric triangles, and random sinusoids. Four of these families are also
+simulated in connected networks. Random envelopes vary per neuron, using an
+RNG stream separate from labels, parameters, amplitudes, and observation noise.
 
-Com os parâmetros acima: 33.600 traços de treino, 8.400 de seleção e 8.400 de
-calibração. Classes equilibradas em cada condição. Todos os neurônios são
-retidos, inclusive os silenciosos. Namespaces de ajuste: 30, 31 e 32.
+With the settings above: 33,600 training traces, 8,400 selection traces, and
+8,400 calibration traces. Classes are balanced within each condition. All
+neurons are retained, including silent ones. Fitting namespaces: 30, 31, and 32.
 
-Uma época com acurácia de referência de pelo menos 99% na seleção tem
-prioridade sobre épocas abaixo desse piso. Entre épocas elegíveis, minimizar:
+An epoch with reference accuracy of at least 99% on the selection split takes
+priority over epochs below this floor. Among eligible epochs, minimize:
 
-`NLL média + 0,5 × pior NLL por condição + 0,25 × pior NLL por condição/classe`.
+`mean NLL + 0.5 × worst per-condition NLL + 0.25 × worst per-condition/class NLL`.
 
-Quando nenhuma época é elegível, acrescenta-se `10 × déficit de acurácia de
-referência` ao escore e registra-se o melhor resultado provisório. A comparação
-final continua exigindo o piso original de 99%. O conjunto de calibração é
-usado apenas para ajustar uma temperatura escalar, após selecionar os pesos.
+When no epoch is eligible, add `10 × reference accuracy shortfall` to the score
+and record the best provisional result. Final comparison still requires the
+original 99% floor. The calibration set is used only to fit a scalar temperature
+after selecting the weights.
 
-## Confirmação reservada antes do treino
+## Confirmation reserved before training
 
-`training/reserved_comparison.json` registra condições, política, namespace e
-seeds antes de gerar os dados de ajuste. Seu SHA-256 é incluído no checkpoint.
-A comparação recusa mudanças nessa reserva e traços que coincidam exatamente
-com qualquer divisão usada no ajuste ou na calibração.
+`training/reserved_comparison.json` records conditions, policy, namespace, and
+seeds before generating fitting data. Its SHA-256 is included in the checkpoint.
+The comparison rejects changes to this reservation and traces that exactly
+match any split used for fitting or calibration.
 
-São 30 condições, cinco seeds novas (`7109, 7211, 7307, 7411, 7523`), namespace
-33 e 100 neurônios por classe/condição/seed: 45.000 sinais por modelo. Ambos
-recebem os mesmos sinais. Três famílias são excluídas de todas as divisões de
-ajuste: chirp de 5 a 65 Hz, envelope exponencial descendente e surto de cosseno
-elevado. Cada uma é testada com ruído de 0,2 e 5 mV. Essas são famílias retidas
-do gerador; não há alegação de independência matemática em relação a qualquer
-combinação das outras ondas.
+There are 30 conditions, five new seeds (`7109, 7211, 7307, 7411, 7523`), namespace
+33, and 100 neurons per class/condition/seed: 45,000 signals per model. Both
+models receive the same signals. Three families are excluded from every fitting
+split: a 5–65 Hz chirp, a descending exponential envelope, and a raised-cosine
+burst. Each is tested with 0.2 and 5 mV noise. These are held-out generator
+families; there is no claim of mathematical independence from every combination
+of the other waveforms.
 
-Os dez critérios de adoção de `ROBUST_TRAINING.md` permanecem inalterados,
-inclusive o limite de três pontos percentuais de regressão em qualquer condição.
-Não há ajuste de limiar nem nova escolha de pesos após observar a confirmação.
-Se qualquer critério falhar, o checkpoint ativo permanece intacto. Após
-inspecionar essa confirmação, ela passa a ser desenvolvimento para futuras
-iterações; uma nova confirmação precisa ser reservada.
+The ten adoption criteria referenced in `ROBUST_TRAINING.md` remain unchanged,
+including the three-percentage-point regression limit for any condition.
+There is no threshold tuning or weight reselection after observing confirmation.
+If any criterion fails, the active checkpoint remains intact. After inspection,
+this confirmation becomes development information for future iterations;
+a new confirmation must be reserved.
 
-As cinco seeds são as réplicas de simulação. Neurônios conectados não são
-réplicas estatisticamente independentes. Os rótulos são famílias de parâmetros
-RS/CH/FS, não diagnósticos biológicos. Critérios de engenharia em simulação
-sintética não demonstram funcionamento com sinais neurais reais.
+The five seeds are the simulation replicates. Connected neurons are not
+statistically independent replicates. Labels identify RS/CH/FS parameter
+families, not biological diagnoses. Engineering criteria in synthetic simulation
+do not demonstrate operation on real neural signals.
