@@ -124,7 +124,7 @@ memory during a second large update in the GUI to measure actual interactive
 working memory.
 
 The same override is available in the application: `python main_app.py --threads 4`
-or `ClassificadorIzhikevich.exe --threads 4`. With no override it uses up to eight
+or `IzhikevichClassifier.exe --threads 4`. With no override it uses up to eight
 threads, leaving at least one logical CPU unused by its inference pool when possible.
 
 For a completed 200 ms window, processing must finish within 0.2 seconds to match

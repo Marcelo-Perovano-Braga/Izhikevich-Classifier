@@ -75,7 +75,7 @@ class ModelTests(unittest.TestCase):
             trained_current_range=(5.0, 30.0),
         )
         self.assertFalse(result.determined)
-        self.assertIn("atividade insuficiente", result.reason)
+        self.assertIn("insufficient activity", result.reason)
 
 
 if __name__ == "__main__":

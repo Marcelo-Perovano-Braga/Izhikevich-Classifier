@@ -35,18 +35,18 @@ class PopulationRequest:
             not isinstance(count, int) or not 0 <= count <= MAX_NEURONS_PER_CLASS
             for count in self.counts
         ):
-            raise ValueError(f"Use de 0 a {MAX_NEURONS_PER_CLASS} neurônios por classe.")
+            raise ValueError(f"Use between 0 and {MAX_NEURONS_PER_CLASS} neurons per class.")
         if sum(self.counts) == 0:
-            raise ValueError("Selecione pelo menos um neurônio.")
+            raise ValueError("Select at least one neuron.")
         if sum(self.counts) > MAX_NEURONS_TOTAL:
-            raise ValueError(f"População com {sum(self.counts):,} neurônios; limite de {MAX_NEURONS_TOTAL:,} no total.")
+            raise ValueError(f"Population has {sum(self.counts):,} neurons; total limit is {MAX_NEURONS_TOTAL:,}.")
         if not np.isfinite(self.current):
-            raise ValueError("O estímulo deve ser finito.")
+            raise ValueError("The stimulus must be finite.")
         if self.seed < 0:
-            raise ValueError("A semente não pode ser negativa.")
+            raise ValueError("The seed cannot be negative.")
         if self.network is not None:
             if not isinstance(self.network, NetworkConfig):
-                raise ValueError("Configuração de rede inválida.")
+                raise ValueError("Invalid network configuration.")
             self.network.degree_for(sum(self.counts))
 
 

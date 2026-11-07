@@ -1,39 +1,40 @@
-# Classificador de padrões neuronais Izhikevich
+# Izhikevich Neural Pattern Classifier
 
-Prova de conceito computacional para classificar três padrões simulados de
-atividade de um único neurônio: **Regular Spiking (RS)**, **Chattering (CH)** e
-**Fast Spiking (FS)**.
+A computational proof of concept developed during a university research program
+to classify three simulated single-neuron activity patterns: **Regular Spiking
+(RS)**, **Chattering (CH)**, and **Fast Spiking (FS)**.
 
-O projeto não utiliza amostras biológicas e não constitui uma interface
-cérebro-computador. Cada linha do dataset corresponde a uma instância
-independente de um neurônio digital. A interface também oferece um modo
-exploratório de rede sináptica esparsa, separado do treinamento original.
+The project uses no biological samples and is not a brain–computer interface.
+Each dataset row represents an independent digital neuron instance. The desktop
+interface also provides an exploratory sparse synaptic network mode, separate
+from the original training setup. Documentation, application text, generated
+summaries, and Windows packaging use **US English (en-US)**.
 
-## O que foi corrigido
+## Project features
 
-- Dataset persistente em SQLite, com sinal, rótulo, parâmetros e metadados.
-- Divisões estratificadas e independentes de treino, validação e teste.
-- Pequenas variações paramétricas e ruído de observação para evitar memorização
-  de três traços determinísticos.
-- Treinamento em mini-batches, normalização calculada apenas no treino, early
-  stopping e melhor checkpoint selecionado pela validação.
-- Acurácia, precisão, recall, F1 e matriz de confusão no conjunto de teste.
-- Comparação reproduzível de custo computacional entre LIF e Izhikevich.
-- Interface com classe esperada, classe prevista, confiança e estado
-  **indeterminado** para sinais silenciosos, fora do domínio ou de baixa confiança.
-- Remoção do antigo “preditor de V(t+1)”, cujo alvo já estava presente na entrada.
+- A persistent SQLite dataset with signals, labels, parameters, and metadata.
+- Independent, stratified training, validation, and test splits.
+- Small parameter variations and observation noise to prevent memorization of
+  three deterministic traces.
+- Mini-batch training, normalization computed only on training data, early
+  stopping, and selection of the best checkpoint using validation data.
+- Accuracy, precision, recall, F1, and a confusion matrix on the test set.
+- A reproducible comparison of LIF and Izhikevich computational costs.
+- An interface showing expected class, predicted class, confidence, and an
+  **indeterminate** state for silent, out-of-domain, or low-confidence signals.
+- Removal of the old “V(t+1) predictor,” whose target was already in its input.
 
-## Requisitos
+## Requirements
 
-- Python 3.10–3.14; Python 3.11 continua sendo a opção recomendada.
-- Windows, Linux ou macOS.
-- GPU CUDA é opcional. O pipeline utiliza CPU quando CUDA não está disponível.
+- Python 3.10–3.14; Python 3.11 remains the recommended option.
+- Windows, Linux, or macOS.
+- A CUDA GPU is optional. The pipeline uses the CPU when CUDA is unavailable.
 
-A interface utiliza **PyQt6-Fluent-Widgets** sobre o PyQt6. O pacote fornece os
-cartões, controles, indicadores de estado, barra de confiança e alternância de
-tema. O gráfico continua sendo renderizado pelo `pyqtgraph`.
+The interface uses **PyQt6-Fluent-Widgets** on top of PyQt6. The package provides
+cards, controls, status indicators, a confidence bar, and theme switching. Plots
+are still rendered by `pyqtgraph`.
 
-### Instalação no Windows
+### Windows installation
 
 ```powershell
 py -3.11 -m venv venv
@@ -42,7 +43,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### Instalação no Linux/macOS
+### Linux/macOS installation
 
 ```bash
 python3.11 -m venv venv
@@ -51,348 +52,349 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-## Treinamento e validação
+## Training and validation
 
-Na raiz do projeto:
+From the project root:
 
 ```bash
 python train_pipeline.py --regenerate
 ```
 
-O comando cria:
+The command creates:
 
-- `data/neural_patterns.sqlite`: banco de dados reproduzível;
-- `weights/classifier.pt`: checkpoint selecionado pela validação;
-- `artifacts/test_metrics.json`: métricas no teste retido;
-- `artifacts/confusion_matrix.csv`: matriz de confusão;
-- `artifacts/training_history.csv`: histórico de treinamento;
-- `artifacts/model_benchmark.json`: custo LIF versus Izhikevich.
-- `artifacts/results_summary.md`: resumo rastreável para o relatório final.
+- `data/neural_patterns.sqlite`: the reproducible database;
+- `weights/classifier.pt`: the checkpoint selected using validation data;
+- `artifacts/test_metrics.json`: held-out test metrics;
+- `artifacts/confusion_matrix.csv`: the confusion matrix;
+- `artifacts/training_history.csv`: training history;
+- `artifacts/model_benchmark.json`: LIF versus Izhikevich computational costs;
+- `artifacts/results_summary.md`: a traceable summary for the final report.
 
-O banco incluído no pacote pode ser verificado sem PyTorch:
+The generated database can be checked without PyTorch:
 
 ```bash
 python validate_dataset.py
 ```
 
-O resultado somente atende à meta quando `target_met` for `true` em
-`test_metrics.json`. A interface funcionar não substitui essa evidência.
+The result meets the target only when `target_met` is `true` in
+`test_metrics.json`. A working interface does not replace that evidence.
 
-Para um ensaio menor de infraestrutura:
+For a smaller infrastructure smoke test:
 
 ```bash
 python train_pipeline.py --regenerate --samples-per-class 60 --epochs 3 --patience 2
 ```
 
-Esse ensaio não deve ser utilizado como resultado científico.
+Do not use this smoke test as a scientific result.
 
-## Expansão da avaliação: robustez e condições retidas
+## Extended evaluation: robustness and held-out conditions
 
-Para avaliar o checkpoint existente sem retreinar, no mesmo ambiente Python:
+To evaluate an existing checkpoint without retraining, in the same Python
+environment:
 
 ```powershell
 python evaluate_research.py
 ```
 
-O estudo compara a CNN congelada com baselines de taxa e atributos temporais,
-varre ruído, variação paramétrica, início do estímulo e força sináptica, e
-avalia formas de entrada/faixas de corrente ausentes do protocolo original.
-Usa somente o split de treino do banco original para ajustar os baselines.
-Todos os neurônios de avaliação, inclusive silenciosos, entram na acurácia total;
-cobertura e acurácia entre aceitos são informadas separadamente.
+The study compares the frozen CNN with firing-rate and temporal-feature
+baselines, sweeps noise, parameter variation, stimulus onset, and synaptic
+strength, and evaluates input waveforms and current ranges absent from the
+original protocol. Only the original database's training split is used to fit
+the baselines. All evaluation neurons, including silent ones, contribute to
+overall accuracy; coverage and accuracy among accepted predictions are reported
+separately.
 
-O comando cria relatórios HTML, CSV e JSON em uma pasta nova dentro de
-`artifacts/research/`. Esta ferramenta é executada por Python fora da interface;
-não exige reconstruir o executável. Veja [RESEARCH.md](RESEARCH.md) para os
-requisitos, o protocolo, exemplos de comandos e a interpretação dos resultados.
+The command creates HTML, CSV, and JSON reports in a new directory under
+`artifacts/research/`. This tool runs through Python outside the interface; it
+does not require rebuilding the executable. See [RESEARCH.md](RESEARCH.md) for
+requirements, the protocol, command examples, and interpretation of results.
 
-### Treinar e adotar um modelo candidato
+### Training and adopting a candidate model
 
-Para treinar com entradas e redes mais variadas, comparar com o checkpoint
-atual e adotá-lo somente se atender a todos os critérios:
+To train with more varied inputs and networks, compare against the current
+checkpoint, and adopt the candidate only if every criterion is met:
 
 ```powershell
 python train_robust.py --seed 17029 --adopt-if-superior
 ```
 
-O protocolo expandido, com envelopes aleatórios e confirmação nova, está em
-[EXPANDED_ROBUST_TRAINING.md](EXPANDED_ROBUST_TRAINING.md). Use `--protocol 2`
-para treiná-lo; `--protocol 1` preserva a reprodução do primeiro estudo.
+The expanded protocol, with random envelopes and a fresh confirmation set, is
+in [EXPANDED_ROBUST_TRAINING.md](EXPANDED_ROBUST_TRAINING.md). Use `--protocol 2`
+to train it; `--protocol 1` remains available to reproduce the first study.
 
-O ajuste usa dados novos, com splits distintos para treino, seleção de época
-e calibração de confiança. A comparação usa novas sementes, duas famílias de
-estímulo ausentes do ajuste e critérios que exigem ganhos sem regressões grandes
-nas condições originais. Uma adoção bem-sucedida preserva uma cópia verificada
-do checkpoint anterior. Veja [ROBUST_TRAINING.md](ROBUST_TRAINING.md) para os
-critérios, as limitações e como comparar um candidato já treinado.
+Fitting uses new data with separate splits for training, epoch selection, and
+confidence calibration. The comparison uses new seeds, two stimulus families
+absent from fitting, and criteria requiring improvements without large
+regressions under the original conditions. Successful adoption preserves a
+verified copy of the previous checkpoint. See [ROBUST_TRAINING.md](ROBUST_TRAINING.md)
+for the criteria, limitations, and instructions for comparing a trained candidate.
 
 ## Interface
 
-Após gerar o checkpoint:
+After generating the checkpoint:
 
 ```bash
 python main_app.py
 ```
 
-### Tela cheia e fundo neural
+### Fullscreen and neural background
 
-- **F11** ou o botão de expandir no canto superior direito alterna a tela cheia.
-- **Esc** sai da tela cheia. O tamanho anterior é recuperado; uma janela que
-  estava maximizada volta ao estado maximizado.
-- Para iniciar diretamente em tela cheia: `python main_app.py --fullscreen`.
-  O executável também aceita `--fullscreen` após ser reconstruído.
-- O botão com ícone de imagem, ao lado do controle de tema, ativa ou desativa
-  o fundo neural. O fundo se adapta aos temas escuro e claro.
+- **F11** or the expand button in the upper-right corner toggles fullscreen.
+- **Esc** exits fullscreen. The previous size is restored; a previously
+  maximized window returns to its maximized state.
+- Start directly in fullscreen with `python main_app.py --fullscreen`.
+  The executable also accepts `--fullscreen` after it has been rebuilt.
+- The image button next to the theme control toggles the neural background.
+  The background adapts to dark and light themes.
 
-A ilustração é estática e decorativa, sem relação com os disparos da simulação.
-É incluída no aplicativo e não exige conexão com a internet. A imagem mantém
-suas proporções e recebe um recorte central para preencher a janela. A versão
-ajustada é armazenada em cache e reutilizada; não há animação nem timer extra.
-Redimensionamento, escala de tela, tema ou ativação do fundo atualizam o cache.
-Gráficos e tabelas conservam suas próprias superfícies para leitura dos dados.
-Sem o arquivo de imagem, a interface utiliza um fundo de cor uniforme.
+The illustration is static and decorative, unrelated to simulation spikes.
+It is bundled with the application and requires no internet connection. The
+image keeps its aspect ratio and is cropped centrally to fill the window. The
+adjusted version is cached and reused; there is no animation or additional
+timer. Resizing, display scaling, theme changes, and toggling the background
+update the cache. Charts and tables retain their own surfaces for readability.
+If the image file is missing, the interface uses a solid-color background.
 
-O arquivo está em `assets/neural_background.png`; a origem, o prompt e a
-descrição de uso estão em [assets/neural_background.md](assets/neural_background.md).
+The file is `assets/neural_background.png`; its origin, prompt, and usage notes
+are in [assets/neural_background.md](assets/neural_background.md).
 
-### Atualização de uma instalação já treinada
+### Updating an installation with a trained checkpoint
 
-O checkpoint anterior continua compatível; não é necessário treinar novamente.
-Instale a nova dependência e execute a interface:
+The previous checkpoint remains compatible; retraining is unnecessary.
+Install the updated dependencies and run the interface:
 
 ```powershell
 python -m pip install -r requirements.txt
 python main_app.py
 ```
 
-Ao extrair o projeto em uma pasta nova, copie `weights/classifier.pt` da pasta
-anterior. Também é possível copiar `artifacts/` para manter as métricas já
-produzidas.
+When extracting the project into a new directory, copy `weights/classifier.pt`
+from the previous directory. You can also copy `artifacts/` to retain existing
+metrics. The active `.pt` checkpoint and SQLite database are not tracked in this
+repository; keep local copies or generate them using the training pipeline.
 
-### Populações independentes
+### Independent populations
 
-Defina separadamente as quantidades de neurônios **RS**, **CH** e **FS**, de zero
-a 1.000.000 por classe, respeitando o limite de **1.000.000 no total** entre
-as três classes, com pelo menos um neurônio no total.
-A população inicial contém dez de cada padrão. O controle de estímulo aplica a mesma intensidade a
-todos os neurônios; ele não representa a quantidade de neurônios nem a quantidade
-de disparos.
+Set the **RS**, **CH**, and **FS** neuron counts separately, from zero to
+1,000,000 per class, subject to a **1,000,000 total** limit across all three
+classes and at least one neuron overall.
+The initial population has ten of each pattern. The stimulus control applies
+the same intensity to every neuron; it represents neither the number of neurons
+nor the number of spikes.
 
-Os neurônios continuam sendo instâncias independentes, sem conexões sinápticas.
-A opção **Variação entre neurônios** utiliza a variação paramétrica e o ruído de
-observação registrados no checkpoint. Desmarque-a para visualizar as
-parametrizações centrais. A mesma semente e as mesmas configurações reproduzem
-a população; **Nova variação** troca a semente.
+Neurons remain independent instances without synaptic connections.
+**Variation between neurons** uses the parameter variation and observation noise
+recorded in the checkpoint. Uncheck it to view the central parameterizations.
+The same seed and settings reproduce the population; **New variation** changes
+the seed.
 
-A IA recebe apenas os traços de potencial, em lotes limitados a 64 neurônios,
-e produz uma classificação independente para cada um. Os rótulos esperados
-são usados somente para comparar os resultados. A arquitetura, os pesos e o
-pipeline de treinamento permanecem compatíveis com `weights/classifier.pt`.
-Os arquivos `.pth` da implementação antiga não substituem esse checkpoint.
+The AI receives only voltage traces, in batches of at most 64 neurons, and
+classifies each independently. Expected labels are used only to compare
+results. The architecture, weights, and training pipeline remain compatible
+with `weights/classifier.pt`. The `.pth` files from the legacy implementation
+cannot replace that checkpoint.
 
-### Redes conectadas (exploratório)
+### Connected networks (exploratory)
 
-No painel esquerdo, **Conexões sinápticas → Conectar neurônios** ativa a rede.
-O botão **Preset: 10.000 neurônios** configura 3.334 RS, 3.333 CH e 3.333 FS,
-com 100 saídas por neurônio: **1.000.000 de sinapses dirigidas**. Ele preserva o
-estímulo, a semente e a opção de variação selecionados.
+In the left panel, **Synaptic connections → Connect neurons** enables the
+network. **Preset: 10,000 neurons** configures 3,334 RS, 3,333 CH, and 3,333 FS
+neurons with 100 outgoing connections per neuron: **1,000,000 directed synapses**.
+It preserves the selected stimulus, seed, and variation setting.
 
-- Cada neurônio envia para destinos aleatórios distintos, sem autoconexões.
-  Em populações pequenas, a quantidade de saídas é limitada a `N − 1`.
-- Cada disparo envia uma corrente assinada após o atraso configurado. O padrão
-  usa força excitatória 0,5, 20% de neurônios inibitórios, ganho inibitório 4,
-  atraso de 1 ms e decaimento exponencial de 5 ms, em unidades do modelo.
-- Os papéis excitatório/inibitório são sorteados separadamente dos parâmetros
-  RS/CH/FS. Eles não representam uma identificação de tipos celulares reais.
-- A mesma semente reproduz parâmetros, conexões e papéis. Alterar apenas a
-  força ou o atraso mantém a topologia, permitindo comparar os efeitos.
-- Há um limite de **1.000.000.000 de sinapses** e até 1.000 saídas por neurônio.
-  Configurações acima do orçamento são rejeitadas antes de alocar a rede.
-  Os modos independente e conectado permitem até 1.000.000 de neurônios no total.
-  Por exemplo: 333.333 RS, 333.333 CH e 333.334 FS. Com 100 saídas por neurônio,
-  essa população tem 100 milhões de sinapses; com 1.000, chega a um bilhão.
-  Esses são limites de configuração, não resultados de um benchmark nessa escala.
+- Each neuron connects to distinct random targets without self-connections.
+  In small populations, outgoing connections are capped at `N − 1`.
+- Each spike delivers a signed current after the configured delay. Defaults
+  are excitatory strength 0.5, 20% inhibitory neurons, inhibitory gain 4,
+  a 1 ms delay, and 5 ms exponential decay, in model units.
+- Excitatory/inhibitory roles are sampled separately from RS/CH/FS parameters.
+  They do not identify real biological cell types.
+- The same seed reproduces parameters, connections, and roles. Changing only
+  strength or delay preserves topology for comparisons.
+- There is a **1,000,000,000-synapse** limit and at most 1,000 outgoing
+  connections per neuron. Over-budget settings are rejected before network
+  allocation. Both independent and connected modes allow up to 1,000,000 neurons
+  total. For example: 333,333 RS, 333,333 CH, and 333,334 FS. With 100 outgoing
+  connections per neuron, this population has 100 million synapses; with 1,000,
+  it reaches one billion. These are configuration limits, not benchmark results
+  at that scale.
 
-A aba **Rede** mostra a taxa de disparo de toda a população em janelas de até
-5 ms, a corrente sináptica média, as contagens de conexões entre grupos RS/CH/FS
-e o papel, entradas, saídas e uma amostra de destinos do neurônio selecionado.
-Todos os destinos são mantidos em memória. O raster continua limitado a 200
-neurônios visíveis, com acesso ao traço completo de qualquer neurônio.
+The **Network** tab shows the population-wide firing rate in bins of up to
+5 ms, mean synaptic current, connection counts between RS/CH/FS groups, and
+the selected neuron's role, incoming and outgoing connections, and sample of
+targets. All targets remain in memory. The raster displays at most 200 neurons,
+while the full trace of any neuron remains accessible.
 
-No modo conectado, os disparos e as taxas são medidos antes do ruído de
-observação; esse ruído não produz eventos sinápticos. As previsões do checkpoint
-continuam disponíveis e são identificadas como **experimentais**. A concordância
-com os parâmetros de origem não valida o classificador em redes: ele foi treinado
-somente com neurônios independentes. Não é necessário retreinar para abrir a
-atualização, mas uma avaliação científica da nova condição exige dados e testes
-próprios, mantendo os resultados originais separados.
+In connected mode, spikes and rates are measured before observation noise;
+this noise does not generate synaptic events. Checkpoint predictions remain
+available and are labeled **experimental**. Agreement with source parameters
+does not validate the classifier on networks: it was trained only on independent
+neurons. Retraining is unnecessary to open the update, but scientific evaluation
+of the new condition requires its own data and tests, keeping original results
+separate.
 
-As equações, a ordem de atualização e as limitações estão em
-[NETWORKS.md](NETWORKS.md). Este modo usa sinapses de corrente; não implementa
-junções elétricas nem plasticidade.
+Equations, update order, and limitations are in [NETWORKS.md](NETWORKS.md).
+This mode uses current-based synapses; it implements neither gap junctions nor
+plasticity.
 
-### Visualização e resultados
+### Visualization and results
 
-- **Sinais:** raster dos instantes de disparo e traço completo do neurônio
-  selecionado. As cores do raster representam classes previstas; cinza indica
-  ausência de classificação determinada. Acima de 200 neurônios, o raster mostra
-  uma amostra visual uniformemente distribuída, identificada no subtítulo.
-- **Classificações individuais:** uma linha por neurônio, com classe esperada,
-  previsão, confiança, disparos e estado. Clique na linha para inspecionar seu
-  sinal. Uma hipótese marcada com `(?)` permanece indeterminada.
-- **Estatísticas:** contagens esperadas e previstas por classe, matriz de
-  confusão com coluna de indeterminados, cobertura e acerto entre classificados.
-  A cobertura é `classificados / total`; o acerto é `corretos / classificados`.
-  Se nenhum neurônio for classificado, o acerto aparece como indisponível.
+- **Signals:** a raster of spike times and the selected neuron's full trace.
+  Raster colors represent predicted classes; gray indicates no determined
+  classification. Above 200 neurons, the raster shows an evenly distributed
+  visual sample, identified in its subtitle.
+- **Individual classifications:** one row per neuron with expected class,
+  prediction, confidence, spikes, and status. Click a row to inspect its signal.
+  A hypothesis marked `(?)` remains indeterminate.
+- **Statistics:** expected and predicted counts per class, a confusion matrix
+  with an indeterminate column, coverage, and accuracy among classified neurons.
+  Coverage is `classified / total`; accuracy is `correct / classified`.
+  If no neuron is classified, accuracy is unavailable.
 
-Todos os neurônios entram na inferência e nas estatísticas, inclusive os que
-não aparecem na amostra visual do raster. A seleção individual permite acessar
-o traço de qualquer neurônio. A redução de pontos para desenho preserva picos
-e não altera o sinal recebido pelo classificador.
+Every neuron contributes to inference and statistics, including those absent
+from the raster preview. Individual selection provides access to any neuron's
+trace. Plot downsampling preserves peaks and does not change the signal received
+by the classifier.
 
-Essas estatísticas descrevem a simulação interativa e não substituem as métricas
-do teste retido. Sem checkpoint, a simulação continua disponível, mas previsões
-e métricas de classificação aparecem como indisponíveis.
+These statistics describe the interactive simulation and do not replace
+held-out test metrics. Without a checkpoint, simulation remains available,
+but predictions and classification metrics are unavailable.
 
-### Responsividade
+### Responsiveness
 
-A simulação e a inferência executam em um único worker, separado da interface.
-Alterações rápidas dos controles são agrupadas; solicitações antigas são
-canceladas ou descartadas, mantendo apenas a configuração pendente mais recente.
-Enquanto o cálculo termina, gráficos e tabelas permanecem identificados como os
-resultados da última simulação concluída. Selecionar outro neurônio utiliza os
-resultados em memória, sem simular ou classificar a população novamente.
+Simulation and inference run in a single worker separate from the interface.
+Rapid control changes are coalesced; stale requests are canceled or discarded,
+retaining only the latest pending configuration. While computation finishes,
+charts and tables remain identified as results of the last completed simulation.
+Selecting another neuron uses results in memory without simulating or
+classifying the population again.
 
-O simulador organiza os valores de um mesmo instante de forma contígua na
-memória. Ruído, contagem de disparos e verificação de sinais usam buffers
-limitados; a interface aplica o ruído no próprio armazenamento da população.
-A simulação verifica cancelamento a cada 32 passos e entre blocos de ruído,
-evitando esperar por uma simulação inteira que já ficou obsoleta.
+The simulator stores values from the same timestep contiguously in memory.
+Noise, spike counting, and signal validation use bounded buffers; the interface
+applies noise directly to population storage. Simulation checks cancellation
+every 32 steps and between noise blocks, avoiding a wait for an entire obsolete
+simulation.
 
-A interface funde as normalizações BatchNorm nas convoluções de uma cópia
-exclusiva para inferência, sem modificar o modelo treinável nem o checkpoint.
-Ela utiliza até oito threads de inferência na CPU, reservando pelo
-menos um processador lógico para outras tarefas quando disponível. A equação,
-o passo temporal, os traços completos, a sequência de ruído para uma mesma
-semente e o checkpoint foram preservados. A inferência mantém precisão float32;
-pequenas diferenças de arredondamento entre kernels paralelos são possíveis.
+The interface fuses BatchNorm normalization into convolutions in a dedicated
+inference copy, without modifying the trainable model or checkpoint. It uses
+up to eight CPU inference threads, reserving at least one logical processor
+for other tasks when available. The equation, timestep, full traces, seeded
+noise sequence, and checkpoint are preserved. Inference retains float32
+precision; small rounding differences between parallel kernels are possible.
 
-### Medir capacidade no seu computador
+### Measuring capacity on your computer
 
-No mesmo ambiente da interface, utilizando seu checkpoint já treinado:
+In the same environment as the interface, using your trained checkpoint:
 
 ```powershell
 python benchmark_population.py --neurons 3000 10000 100000 --threads 8 --output artifacts/population_benchmark.json
 ```
 
-Para medir a rede com o checkpoint local:
+To measure the network with the local checkpoint:
 
 ```powershell
 python benchmark_population.py --connected --neurons 1000 10000 --out-degree 100 --threads 8 --output artifacts/network_benchmark.json
 ```
 
-O JSON registra as configurações sinápticas, sinapses efetivas, armazenamento da
-topologia, eventos entregues, taxas de disparo e tempos de cada repetição. Use
-`--simulation-only` para medir a rede sem incluir a classificação.
+The JSON records synaptic settings, actual synapses, topology storage, delivered
+events, firing rates, and timings for each repetition. Use `--simulation-only`
+to measure the network without classification.
 
-O benchmark realiza três medições por tamanho, após aquecimento, e inclui
-simulação, ruído, inferência, estatísticas e preparação do raster. Não inclui
-desenho da interface nem manter a população anterior em memória. Para comparar
-o uso da CPU, execute novamente com `--threads 1` ou `--threads 4`. Sem checkpoint,
-`--simulation-only` mede apenas a simulação e preparação dos resultados; esse
-tempo não representa o custo completo de classificação.
+The benchmark runs three measurements per size after warm-up, including
+simulation, noise, inference, statistics, and raster preparation. It excludes
+interface rendering and retention of the previous population. To compare CPU
+usage, repeat with `--threads 1` or `--threads 4`. Without a checkpoint,
+`--simulation-only` measures only simulation and result preparation; this time
+does not represent the full classification cost.
 
-Após comparar os resultados, a interface também aceita `python main_app.py
---threads 4` (ou o executável com `--threads 4`) para utilizar o número de threads
-mais adequado ao computador. Sem esse argumento, a seleção é automática.
+After comparing results, the interface also accepts `python main_app.py --threads 4`
+(or the executable with `--threads 4`) to use a suitable thread count for the
+computer. Selection is automatic without this argument.
 
-Com a janela padrão de 200 ms e passo de 0,1 ms, cada neurônio ocupa 8.000 bytes
-somente em potencial armazenado. Durante uma atualização, a interface pode
-manter a população anterior e a nova: aproximadamente `16.000 × neurônios`
-bytes, além de parâmetros, previsões, buffers do modelo e da interface. O limite
-configurado não garante atualização instantânea nem execução em tempo real.
+At the default 200 ms window and 0.1 ms timestep, each neuron requires 8,000 bytes
+for stored voltage alone. During an update, the interface may retain both the
+previous and new populations: approximately `16,000 × neurons` bytes, plus
+parameters, predictions, model buffers, and interface overhead. The configured
+limit does not guarantee instantaneous updates or real-time execution.
 
-As fórmulas de memória, hipóteses sobre conexões esparsas e densas e estimativas
-para um Ryzen 7 5700X3D com 32 GiB estão em [CAPACITY.md](CAPACITY.md).
+Memory formulas, assumptions about sparse and dense connections, and estimates
+for a Ryzen 7 5700X3D with 32 GiB are in [CAPACITY.md](CAPACITY.md).
 
-A interface mantém alternância entre temas escuro e claro, indicação do
-checkpoint carregado e os estados **correto**, **divergente** e **indeterminado**.
+The interface supports dark and light themes, indicates whether a checkpoint
+is loaded, and shows **correct**, **mismatch**, and **indeterminate** states.
 
-Os arquivos `assets/app_icon.png` e `assets/app_icon.ico` são incluídos no
-projeto. No Windows, a aplicação também define uma identidade própria para não
-ser agrupada visualmente sob o ícone genérico do interpretador Python.
+`assets/app_icon.png` and `assets/app_icon.ico` are included in the project.
+On Windows, the application also sets its own identity so it is not visually
+grouped under the Python interpreter's generic icon.
 
-## Gerar o aplicativo Windows
+## Building the Windows application
 
-O projeto inclui uma configuração do PyInstaller para gerar um aplicativo
-Windows de 64 bits. A distribuição utiliza o formato **onedir**, mais confiável
-para PyTorch, PyQt6 e seus arquivos binários do que concentrar tudo em um único
-executável temporariamente extraído.
+The project includes a PyInstaller configuration for a 64-bit Windows
+application. Distribution uses **onedir**, which is more reliable for PyTorch,
+PyQt6, and their binaries than a single executable extracted at runtime.
 
-No Windows, ative o mesmo ambiente virtual usado no treinamento e execute:
+On Windows, activate the same virtual environment used for training and run:
 
 ```powershell
 .\build_windows.ps1
 ```
 
-Se a política de execução do PowerShell bloquear o arquivo:
+If the PowerShell execution policy blocks the file:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build_windows.ps1
 ```
 
-O script:
+The script:
 
-1. confirma que está sendo executado no Windows;
-2. verifica a presença de `weights/classifier.pt`;
-3. instala as dependências de aplicação e empacotamento;
-4. incorpora o checkpoint, o ícone e os metadados do executável;
-5. produz `dist/ClassificadorIzhikevich/ClassificadorIzhikevich.exe`;
-6. cria `dist/ClassificadorIzhikevich-Windows-x64.zip` para distribuição.
+1. Confirms that it is running on Windows.
+2. Checks for `weights/classifier.pt`.
+3. Installs application and packaging dependencies.
+4. Bundles the checkpoint, icon, and executable metadata.
+5. Produces `dist/IzhikevichClassifier/IzhikevichClassifier.exe`.
+6. Creates `dist/IzhikevichClassifier-Windows-x64.zip` for distribution.
 
-O arquivo `.exe` deve permanecer junto ao subdiretório `_internal`. O computador
-que executar essa distribuição não precisa ter Python ou as bibliotecas do
-projeto instaladas.
+The `.exe` must remain alongside the `_internal` subdirectory. A computer running
+this distribution does not need Python or the project's libraries installed.
+Rebuild an existing Portuguese executable to obtain the English interface and
+metadata; the source translation does not modify previously built packages.
 
-Como o executável não possui assinatura digital, o Windows SmartScreen ou um
-antivírus pode solicitar confirmação na primeira execução. Isso não é removido
-por configuração de código; distribuição pública sem esse aviso requer um
-certificado de assinatura de código.
+Because the executable is unsigned, Windows SmartScreen or antivirus software
+may request confirmation on first launch. Code configuration cannot remove this;
+public distribution without that warning requires a code-signing certificate.
 
-Estímulos sem disparos suficientes são exibidos como indeterminados. Isso é uma
-restrição de observabilidade: sinais vazios não contêm informação suficiente
-para distinguir todas as parametrizações.
+Stimuli without enough spikes are shown as indeterminate. This is an
+observability limitation: empty signals contain insufficient information to
+distinguish all parameterizations.
 
-## Testes
+## Tests
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-Os testes de simulação, banco de dados, população e métricas usam NumPy e a
-biblioteca padrão. Os testes da arquitetura e da inferência em lote exigem
-PyTorch. Os testes de integração da interface e do worker exigem as dependências
-gráficas e executam com a plataforma Qt `offscreen`, sem abrir janelas. Eles
-verificam cancelamento, descarte de resultados antigos, seleção individual e
-contabilização dos resultados. Checkpoints de teste são fixtures não treinadas
-e não constituem validação da acurácia científica.
+Simulation, database, population, and metrics tests use NumPy and the standard
+library. Architecture and batch-inference tests require PyTorch. Interface and
+worker integration tests require graphical dependencies and run with Qt's
+`offscreen` platform without opening windows. They check cancellation,
+discarding stale results, individual selection, and result accounting. Test
+checkpoints are untrained fixtures and do not validate scientific accuracy.
 
-## Benchmark isolado
+## Standalone benchmark
 
 ```bash
 python benchmark_models.py --samples 512 --repeats 5
 ```
 
-O benchmark compara custo de simulação, não equivalência biológica. LIF e
-Izhikevich possuem equações, estados e escalas de entrada diferentes.
+The benchmark compares simulation cost, not biological equivalence. LIF and
+Izhikevich use different equations, states, and input scales.
 
-## Limitações que devem constar no relatório final
+## Limitations to include in the final report
 
-1. Os sinais são sintéticos e os rótulos derivam de parametrizações conhecidas.
-2. A acurácia mede generalização dentro da distribuição simulada, não em tecido
-   neural real.
-3. RS, CH e FS são padrões fenomenológicos simulados, não diagnósticos.
-4. A classificação requer atividade observável; silêncio neural pode ser
-   intrinsecamente ambíguo.
-5. A comparação LIF–Izhikevich não transforma os dois modelos em representações
-   biologicamente equivalentes.
+1. Signals are synthetic, and labels derive from known parameterizations.
+2. Accuracy measures generalization within the simulated distribution, not
+   real neural tissue.
+3. RS, CH, and FS are simulated phenomenological patterns, not diagnoses.
+4. Classification requires observable activity; neural silence may be
+   intrinsically ambiguous.
+5. The LIF–Izhikevich comparison does not make the two models biologically
+   equivalent representations.

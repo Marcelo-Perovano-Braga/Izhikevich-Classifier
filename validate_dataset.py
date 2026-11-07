@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 from data_pipeline import read_metadata
@@ -18,7 +19,7 @@ def validate_dataset(path: Path) -> dict[str, object]:
     expected_trace_bytes = int(metadata["simulation"]["window_size"]) * 4
     expected_per_class = int(metadata["samples_per_class"])
 
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection:
         integrity = connection.execute("PRAGMA integrity_check").fetchone()[0]
         total = int(connection.execute("SELECT COUNT(*) FROM samples").fetchone()[0])
         splits = dict(connection.execute(

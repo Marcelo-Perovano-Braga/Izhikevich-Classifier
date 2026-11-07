@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
@@ -58,8 +59,10 @@ class ResearchStudyTests(unittest.TestCase):
         first, source, hashes = fit_baselines(self.config, database=self.database, synthetic_samples=30, burst_isi_ms=5)
         modified = self.root / "modified.sqlite"
         modified.write_bytes(self.database.read_bytes())
-        with sqlite3.connect(modified) as connection:
+        with closing(sqlite3.connect(modified)) as connection, connection:
             connection.execute("UPDATE samples SET trace=? WHERE split!='train'", (np.zeros(300, dtype=np.float32).tobytes(),))
+        with self.assertRaises(sqlite3.ProgrammingError):
+            connection.execute("SELECT 1")
         second, other_source, other_hashes = fit_baselines(self.config, database=modified, synthetic_samples=30, burst_isi_ms=5)
         self.assertEqual(source["rows_fitted"], 63)
         self.assertEqual(source["class_counts_fitted"], [21, 21, 21])

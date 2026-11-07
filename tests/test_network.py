@@ -163,7 +163,7 @@ class SparseNetworkTests(unittest.TestCase):
                        {"tau_ms": 0}, {"delay_ms": 0}, {"inhibitory_fraction": 1.1}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 NetworkConfig(**kwargs)
-        with self.assertRaisesRegex(ValueError, "limite"):
+        with self.assertRaisesRegex(ValueError, "limit"):
             NetworkConfig(out_degree=1000).degree_for(1_000_001)
 
     def test_billion_synapse_request_passes_without_allocating_the_network(self):

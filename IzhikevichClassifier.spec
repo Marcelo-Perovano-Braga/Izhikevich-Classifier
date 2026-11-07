@@ -13,19 +13,19 @@ icon_path = project_root / "assets" / "app_icon.ico"
 version_path = project_root / "packaging" / "windows_version_info.txt"
 
 if sys.platform != "win32":
-    raise SystemExit("A especificação deve ser executada no Windows.")
+    raise SystemExit("The specification must be run on Windows.")
 if struct.calcsize("P") * 8 != 64:
-    raise SystemExit("Utilize uma instalação Python de 64 bits para gerar o aplicativo.")
+    raise SystemExit("Use a 64-bit Python installation to build the application.")
 
 if not checkpoint_path.is_file():
     raise SystemExit(
-        "Checkpoint ausente: execute train_pipeline.py ou copie "
-        "weights/classifier.pt antes de gerar o executável."
+        "Missing checkpoint: run train_pipeline.py or copy "
+        "weights/classifier.pt before building the executable."
     )
 
 for required_path in (icon_path, version_path):
     if not required_path.is_file():
-        raise SystemExit(f"Arquivo necessário ausente: {required_path}")
+        raise SystemExit(f"Missing required file: {required_path}")
 
 fluent_datas, fluent_binaries, fluent_hidden_imports = collect_all(
     "qfluentwidgets"
@@ -58,7 +58,7 @@ executable = EXE(
     analysis.scripts,
     [],
     exclude_binaries=True,
-    name="ClassificadorIzhikevich",
+    name="IzhikevichClassifier",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -80,5 +80,5 @@ bundle = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="ClassificadorIzhikevich",
+    name="IzhikevichClassifier",
 )

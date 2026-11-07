@@ -31,25 +31,25 @@ class NetworkConfig:
 
     def __post_init__(self) -> None:
         if not isinstance(self.out_degree, int) or not 0 <= self.out_degree <= MAX_OUT_DEGREE:
-            raise ValueError(f"Use de 0 a {MAX_OUT_DEGREE} conexões por neurônio.")
+            raise ValueError(f"Use between 0 and {MAX_OUT_DEGREE} connections per neuron.")
         values = (self.weight, self.inhibitory_fraction, self.inhibitory_gain, self.delay_ms, self.tau_ms)
         if not np.isfinite(values).all():
-            raise ValueError("Os parâmetros da rede devem ser finitos.")
+            raise ValueError("Network parameters must be finite.")
         if not 0 <= self.weight <= 5 or not 0 <= self.inhibitory_gain <= 10:
-            raise ValueError("Use força entre 0 e 5 e ganho inibitório entre 0 e 10.")
+            raise ValueError("Use strength between 0 and 5 and inhibitory gain between 0 and 10.")
         if not 0 <= self.inhibitory_fraction <= 1:
-            raise ValueError("A fração inibitória deve estar entre 0 e 1.")
+            raise ValueError("The inhibitory fraction must be between 0 and 1.")
         if not 0 < self.delay_ms <= 20 or not 0.5 <= self.tau_ms <= 50:
-            raise ValueError("Use atraso entre 0 e 20 ms e decaimento entre 0,5 e 50 ms.")
+            raise ValueError("Use a delay greater than 0 and at most 20 ms and decay between 0.5 and 50 ms.")
 
     def degree_for(self, size: int) -> int:
         if size < 1:
-            raise ValueError("Selecione pelo menos um neurônio.")
+            raise ValueError("Select at least one neuron.")
         degree = min(self.out_degree, size - 1)
         if size * degree > MAX_SYNAPSES:
             raise ValueError(
-                f"Rede com {size * degree:,} sinapses; limite de {MAX_SYNAPSES:,}. "
-                "Reduza a população ou as conexões por neurônio."
+                f"Network has {size * degree:,} synapses; limit is {MAX_SYNAPSES:,}. "
+                "Reduce the population or connections per neuron."
             )
         return degree
 
@@ -103,7 +103,7 @@ def build_sparse_network(
     """
     labels = np.asarray(labels)
     if labels.ndim != 1 or not np.issubdtype(labels.dtype, np.integer) or not np.isin(labels, (0, 1, 2)).all():
-        raise ValueError("A rede deve usar os rótulos RS, CH e FS.")
+        raise ValueError("The network must use the RS, CH, and FS labels.")
     degree = config.degree_for(labels.size)
     _check_cancelled(cancelled)
     rng = np.random.default_rng(np.random.SeedSequence([seed, 0x53594E]))
@@ -165,7 +165,7 @@ def simulate_connected_batch(
     _check_cancelled(cancelled)
     size = len(batch.a)
     if network.size != size or network.source_weights.shape != (size,):
-        raise ValueError("A rede deve conter todos os neurônios da população.")
+        raise ValueError("The network must contain all neurons in the population.")
     a, b, c, d, external = (np.asarray(values, dtype=np.float32) for values in (
         batch.a, batch.b, batch.c, batch.d, batch.current,
     ))
@@ -220,7 +220,7 @@ def simulate_connected_batch(
                 traces[:, step + 1] = next_voltage
                 recovery = next_recovery
     except FloatingPointError as exc:
-        raise ValueError("Rede numericamente instável. Reduza a força ou o ganho das sinapses.") from exc
+        raise ValueError("Numerically unstable network. Reduce synaptic strength or gain.") from exc
 
     _check_cancelled(cancelled)
     spike_neurons = np.concatenate(neuron_events) if neuron_events else np.empty(0, dtype=np.int32)

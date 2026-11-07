@@ -14,26 +14,26 @@ VSVersionInfo(
         StringFileInfo(
             [
                 StringTable(
-                    "041604B0",
+                    "040904B0",
                     [
-                        StringStruct("CompanyName", "Projeto acadêmico"),
+                        StringStruct("CompanyName", "Academic research project"),
                         StringStruct(
                             "FileDescription",
-                            "Classificador de padrões neuronais Izhikevich",
+                            "Izhikevich Neural Pattern Classifier",
                         ),
                         StringStruct("FileVersion", "1.0.0"),
-                        StringStruct("InternalName", "ClassificadorIzhikevich"),
+                        StringStruct("InternalName", "IzhikevichClassifier"),
                         StringStruct(
-                            "OriginalFilename", "ClassificadorIzhikevich.exe"
+                            "OriginalFilename", "IzhikevichClassifier.exe"
                         ),
                         StringStruct(
-                            "ProductName", "Classificador Izhikevich"
+                            "ProductName", "Izhikevich Classifier"
                         ),
                         StringStruct("ProductVersion", "1.0.0"),
                     ],
                 )
             ]
         ),
-        VarFileInfo([VarStruct("Translation", [1046, 1200])]),
+        VarFileInfo([VarStruct("Translation", [1033, 1200])]),
     ],
 )

@@ -14,66 +14,66 @@ try {
 
     $Platform = (& $PythonExe -c "import sys; print(sys.platform)").Trim()
     if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível consultar o interpretador Python."
+        throw "Could not query the Python interpreter."
     }
     if ($Platform -ne "win32") {
-        throw "A geração do .exe deve ser executada no Windows."
+        throw "The .exe must be built on Windows."
     }
 
     $PointerBits = (& $PythonExe -c "import struct; print(struct.calcsize('P') * 8)").Trim()
     if ($LASTEXITCODE -ne 0 -or $PointerBits -ne "64") {
-        throw "Utilize uma instalação Python de 64 bits para gerar o aplicativo."
+        throw "Use a 64-bit Python installation to build the application."
     }
 
     if (-not (Test-Path "weights\classifier.pt" -PathType Leaf)) {
         throw (
-            "Checkpoint ausente em weights\classifier.pt. " +
-            "Execute train_pipeline.py ou copie o checkpoint já treinado."
+            "Missing checkpoint at weights\classifier.pt. " +
+            "Run train_pipeline.py or copy the trained checkpoint."
         )
     }
 
     if (-not $SkipDependencyInstall) {
-        Write-Host "Instalando dependências da aplicação..." -ForegroundColor Cyan
+        Write-Host "Installing application dependencies..." -ForegroundColor Cyan
         & $PythonExe -m pip install -r requirements.txt
         if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao instalar requirements.txt."
+            throw "Failed to install requirements.txt."
         }
 
-        Write-Host "Instalando dependências de empacotamento..." -ForegroundColor Cyan
+        Write-Host "Installing packaging dependencies..." -ForegroundColor Cyan
         & $PythonExe -m pip install -r requirements-build.txt
         if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao instalar requirements-build.txt."
+            throw "Failed to install requirements-build.txt."
         }
     }
 
-    Write-Host "Gerando aplicativo Windows..." -ForegroundColor Cyan
+    Write-Host "Building the Windows application..." -ForegroundColor Cyan
     & $PythonExe -m PyInstaller --clean --noconfirm IzhikevichClassifier.spec
     if ($LASTEXITCODE -ne 0) {
-        throw "O PyInstaller não concluiu a geração do aplicativo."
+        throw "PyInstaller did not finish building the application."
     }
 
-    $DistributionDirectory = Join-Path $ProjectRoot "dist\ClassificadorIzhikevich"
-    $ExecutablePath = Join-Path $DistributionDirectory "ClassificadorIzhikevich.exe"
+    $DistributionDirectory = Join-Path $ProjectRoot "dist\IzhikevichClassifier"
+    $ExecutablePath = Join-Path $DistributionDirectory "IzhikevichClassifier.exe"
     if (-not (Test-Path $ExecutablePath -PathType Leaf)) {
-        throw "Build finalizado sem produzir $ExecutablePath."
+        throw "Build finished without producing $ExecutablePath."
     }
 
     if (-not $SkipArchive) {
-        $ArchivePath = Join-Path $ProjectRoot "dist\ClassificadorIzhikevich-Windows-x64.zip"
+        $ArchivePath = Join-Path $ProjectRoot "dist\IzhikevichClassifier-Windows-x64.zip"
         if (Test-Path $ArchivePath -PathType Leaf) {
             Remove-Item $ArchivePath -Force
         }
-        Write-Host "Compactando a distribuição..." -ForegroundColor Cyan
+        Write-Host "Creating the distribution archive..." -ForegroundColor Cyan
         Compress-Archive -Path "$DistributionDirectory\*" -DestinationPath $ArchivePath
-        Write-Host "Pacote: $ArchivePath" -ForegroundColor Green
+        Write-Host "Package: $ArchivePath" -ForegroundColor Green
     }
 
     $Hash = (Get-FileHash $ExecutablePath -Algorithm SHA256).Hash
-    Write-Host "Executável: $ExecutablePath" -ForegroundColor Green
+    Write-Host "Executable: $ExecutablePath" -ForegroundColor Green
     Write-Host "SHA-256: $Hash" -ForegroundColor Green
     Write-Host (
-        "Mantenha o executável dentro da pasta ClassificadorIzhikevich; " +
-        "as dependências ficam no subdiretório _internal."
+        "Keep the executable inside the IzhikevichClassifier folder; " +
+        "dependencies are in the _internal subdirectory."
     ) -ForegroundColor Yellow
 }
 finally {
